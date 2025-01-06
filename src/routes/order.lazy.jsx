@@ -1,19 +1,25 @@
-import { useContext, useEffect, useState } from "react";
-import Cart from "./Cart";
-import Pizza from "./Pizza";
-import { CartContext } from "./contexts";
+import { useState, useEffect, useContext } from "react";
+import { createLazyFileRoute } from "@tanstack/react-router";
+import { CartContext } from "../contexts";
+import Cart from "../Cart";
+import Pizza from "../Pizza";
 
+// feel free to change en-US / USD to your locale
 const intl = new Intl.NumberFormat("en-US", {
   style: "currency",
   currency: "USD",
 });
 
-export default function Order() {
+export const Route = createLazyFileRoute("/order")({
+  component: Order,
+});
+
+function Order() {
   const [pizzaType, setPizzaType] = useState("pepperoni");
   const [pizzaSize, setPizzaSize] = useState("M");
   const [pizzaTypes, setPizzaTypes] = useState([]);
-  const [cart, setCart] = useContext(CartContext);
   const [loading, setLoading] = useState(true);
+  const [cart, setCart] = useContext(CartContext);
 
   async function checkout() {
     setLoading(true);
@@ -23,7 +29,9 @@ export default function Order() {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ cart: cart }),
+      body: JSON.stringify({
+        cart,
+      }),
     });
 
     setCart([]);
@@ -34,7 +42,7 @@ export default function Order() {
   if (!loading) {
     selectedPizza = pizzaTypes.find((pizza) => pizzaType === pizza.id);
     price = intl.format(
-      selectedPizza.sizes ? selectedPizza.sizes[pizzaSize] : ""
+      selectedPizza.sizes ? selectedPizza.sizes[pizzaSize] : "",
     );
   }
 
@@ -131,7 +139,7 @@ export default function Order() {
           )}
         </form>
       </div>
-      {loading ? <h2>Loading...</h2> : <Cart cart={cart} checkout={checkout} />}
+      {loading ? <h2>LOADING …</h2> : <Cart checkout={checkout} cart={cart} />}
     </div>
   );
 }
